@@ -9,7 +9,8 @@ window.App = (function() {
     filterDateRange: 'this_month',
     searchQuery: '',
     editingTransaction: null,
-    editingCategory: null
+    editingCategory: null,
+    historyLimit: 50
   };
 
   // DOM Elements
@@ -89,6 +90,7 @@ window.App = (function() {
     // Settings
     els.settingsDisplayCurrency = document.getElementById('settings-display-currency');
     els.settingsLanguage = document.getElementById('settings-language');
+    els.settingsTheme = document.getElementById('settings-theme');
     els.btnManageCategories = document.getElementById('btn-manage-categories');
     els.btnExport = document.getElementById('btn-export');
     els.btnImport = document.getElementById('btn-import');
@@ -125,10 +127,13 @@ window.App = (function() {
     
     // Google Sign in
     els.btnSignInGoogle = document.getElementById('btn-sign-in-google');
+    
+    // Init Theme
+    const savedTheme = localStorage.getItem('catchcash_theme') || 'dark';
+    if (savedTheme === 'light') document.body.classList.add('light-mode');
   }
 
   function bindEvents() {
-    if(els.btnSignInGoogle) els.btnSignInGoogle.addEventListener('click', () => window.Auth.signIn());
     
     els.tabBtns.forEach(btn => {
       btn.addEventListener('click', (e) => {
@@ -152,14 +157,15 @@ window.App = (function() {
     });
     
     // History Filters
-    els.historySearch.addEventListener('input', debounce(renderHistory, 300));
-    els.filterType.addEventListener('change', (e) => { state.filterType = e.target.value; renderHistory(); });
-    els.filterCategory.addEventListener('change', (e) => { state.filterCategory = e.target.value; renderHistory(); });
-    els.filterDateRange.addEventListener('change', (e) => { state.filterDateRange = e.target.value; renderHistory(); });
+    els.historySearch.addEventListener('input', debounce(() => { state.historyLimit = 50; renderHistory(); }, 300));
+    els.filterType.addEventListener('change', (e) => { state.filterType = e.target.value; state.historyLimit = 50; renderHistory(); });
+    els.filterCategory.addEventListener('change', (e) => { state.filterCategory = e.target.value; state.historyLimit = 50; renderHistory(); });
+    els.filterDateRange.addEventListener('change', (e) => { state.filterDateRange = e.target.value; state.historyLimit = 50; renderHistory(); });
     
     // Settings
     els.btnSignOut.addEventListener('click', () => window.Auth.signOut());
     els.settingsLanguage.addEventListener('click', toggleLanguage);
+    els.settingsTheme.addEventListener('click', toggleTheme);
     els.settingsDisplayCurrency.addEventListener('change', (e) => {
       window.Currency.setDisplayCurrency(state.user.uid, e.target.value);
       translateUI();
@@ -248,8 +254,8 @@ window.App = (function() {
     state.transactions = stored ? JSON.parse(stored) : [];
     // Sort descending by date, then createdAt
     state.transactions.sort((a,b) => {
-      if(a.date !== b.date) return new Date(b.date) - new Date(a.date);
-      return new Date(b.createdAt) - new Date(a.createdAt);
+      if(a.date !== b.date) return b.date.localeCompare(a.date);
+      return b.createdAt.localeCompare(a.createdAt);
     });
   }
   
@@ -347,14 +353,17 @@ window.App = (function() {
     } else {
       els.historyEmpty.classList.add('hidden');
       
+      // Limit for performance
+      let limited = filtered.slice(0, state.historyLimit);
+      
       // Group by date
       const groups = {};
-      filtered.forEach(tx => {
+      limited.forEach(tx => {
         if (!groups[tx.date]) groups[tx.date] = [];
         groups[tx.date].push(tx);
       });
       
-      const sortedDates = Object.keys(groups).sort((a,b) => new Date(b) - new Date(a));
+      const sortedDates = Object.keys(groups).sort((a,b) => b.localeCompare(a));
       
       const frag = document.createDocumentFragment();
       
@@ -371,6 +380,17 @@ window.App = (function() {
           frag.appendChild(item);
         });
       });
+      
+      if (filtered.length > state.historyLimit) {
+        const loadMoreBtn = document.createElement('button');
+        loadMoreBtn.className = 'btn-secondary w-full mt-4';
+        loadMoreBtn.textContent = window.I18n.t('load_more') || 'Load More';
+        loadMoreBtn.addEventListener('click', () => {
+           state.historyLimit += 50;
+           renderHistory();
+        });
+        frag.appendChild(loadMoreBtn);
+      }
       
       els.historyList.appendChild(frag);
     }
@@ -417,7 +437,16 @@ window.App = (function() {
     
     const lang = window.I18n.getCurrentLanguage();
     els.settingsLanguage.textContent = lang === 'ar' ? 'العربية' : 'English';
-    // Style as toggle if needed
+    
+    const isLight = document.body.classList.contains('light-mode');
+    els.settingsTheme.textContent = isLight ? (lang === 'ar' ? 'الوضع الفاتح' : 'Light Mode') : (lang === 'ar' ? 'الوضع الداكن' : 'Dark Mode');
+  }
+  
+  function toggleTheme() {
+    const isLight = document.body.classList.toggle('light-mode');
+    localStorage.setItem('catchcash_theme', isLight ? 'light' : 'dark');
+    renderSettings();
+    if (window.Charts) window.Charts.updateTheme();
   }
   
   function renderCategories() {
@@ -623,8 +652,8 @@ window.App = (function() {
     
     // Sort again
     state.transactions.sort((a,b) => {
-      if(a.date !== b.date) return new Date(b.date) - new Date(a.date);
-      return new Date(b.createdAt) - new Date(a.createdAt);
+      if(a.date !== b.date) return b.date.localeCompare(a.date);
+      return b.createdAt.localeCompare(a.createdAt);
     });
 
     saveTransactions();

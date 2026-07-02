@@ -6,14 +6,32 @@ window.Charts = (function() {
   let analyticsCategoryChart = null;
   let analyticsCurrencyChart = null;
 
-  // Chart.js global defaults for dark theme
+  // Chart.js global defaults
   if (window.Chart) {
-    Chart.defaults.color = '#94a3b8';
     Chart.defaults.font.family = "'Inter', sans-serif";
-    Chart.defaults.scale.grid.color = 'rgba(255, 255, 255, 0.05)';
-    Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(0, 0, 0, 0.8)';
     Chart.defaults.plugins.tooltip.padding = 12;
     Chart.defaults.plugins.tooltip.cornerRadius = 8;
+    applyThemeDefaults();
+  }
+  
+  function applyThemeDefaults() {
+    if (!window.Chart) return;
+    const isLight = document.body.classList.contains('light-mode');
+    Chart.defaults.color = isLight ? '#64748B' : '#94a3b8';
+    Chart.defaults.scale.grid.color = isLight ? 'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.05)';
+    Chart.defaults.plugins.tooltip.backgroundColor = isLight ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.8)';
+    Chart.defaults.plugins.tooltip.titleColor = isLight ? '#0F172A' : '#FFFFFF';
+    Chart.defaults.plugins.tooltip.bodyColor = isLight ? '#0F172A' : '#FFFFFF';
+  }
+  
+  function updateTheme() {
+    applyThemeDefaults();
+    if (dashboardSpendingChart) dashboardSpendingChart.update();
+    if (dashboardTrendChart) dashboardTrendChart.update();
+    if (analyticsSpendingChart) analyticsSpendingChart.update();
+    if (analyticsTrendChart) analyticsTrendChart.update();
+    if (analyticsCategoryChart) analyticsCategoryChart.update();
+    if (analyticsCurrencyChart) analyticsCurrencyChart.update();
   }
 
   function getCatName(cat) {
@@ -334,6 +352,7 @@ window.Charts = (function() {
     initAnalytics,
     updateDashboard: initDashboard,
     updateAnalytics: initAnalytics,
+    updateTheme,
     destroyAll
   };
 })();

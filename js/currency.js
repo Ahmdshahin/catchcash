@@ -19,6 +19,7 @@ window.Currency = (function() {
 
   let displayCurrency = 'SAR';
   let currentUserUid = null;
+  let memCache = {};
 
   function init(uid) {
     currentUserUid = uid;
@@ -61,6 +62,7 @@ window.Currency = (function() {
         timestamp: Date.now()
       };
       
+      memCache[baseCurrency] = cacheData;
       localStorage.setItem(`catchcash_rates_${baseCurrency}`, JSON.stringify(cacheData));
       return cacheData;
     } catch (error) {
@@ -70,11 +72,18 @@ window.Currency = (function() {
   }
 
   function getCachedRates(baseCurrency) {
+    if (memCache[baseCurrency]) {
+      if (Date.now() - memCache[baseCurrency].timestamp < 24 * 60 * 60 * 1000) {
+        return memCache[baseCurrency];
+      }
+    }
+    
     const cached = localStorage.getItem(`catchcash_rates_${baseCurrency}`);
     if (cached) {
       const parsed = JSON.parse(cached);
       // Valid for 24 hours
       if (Date.now() - parsed.timestamp < 24 * 60 * 60 * 1000) {
+        memCache[baseCurrency] = parsed;
         return parsed;
       }
     }
