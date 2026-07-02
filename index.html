@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#000000">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="description" content="Track your cash flow, analyze spending patterns">
+  <title>Catch Cash</title>
+  
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- LOGIN SCREEN -->
+  <div id="login-screen" class="screen active">
+    <div class="login-container">
+      <div class="logo">
+        <span class="logo-emoji">💰</span>
+        <h1 class="logo-text">Catch Cash</h1>
+      </div>
+      <p class="tagline" data-i18n="app_name">اطمن على فلوسك</p>
+      
+      <button id="btn-sign-in-google" class="btn-google">
+        <svg viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
+          <g transform="matrix(1, 0, 0, 1, 27.009001, -39.238998)">
+            <path fill="#4285F4" d="M -3.264 51.509 C -3.264 50.719 -3.334 49.969 -3.454 49.239 L -14.754 49.239 L -14.754 53.749 L -8.284 53.749 C -8.574 55.229 -9.424 56.479 -10.684 57.329 L -10.684 60.329 L -6.824 60.329 C -4.564 58.239 -3.264 55.159 -3.264 51.509 Z"/>
+            <path fill="#34A853" d="M -14.754 63.239 C -11.514 63.239 -8.804 62.159 -6.824 60.329 L -10.684 57.329 C -11.764 58.049 -13.134 58.489 -14.754 58.489 C -17.884 58.489 -20.534 56.379 -21.484 53.529 L -25.464 53.529 L -25.464 56.619 C -23.494 60.539 -19.444 63.239 -14.754 63.239 Z"/>
+            <path fill="#FBBC05" d="M -21.484 53.529 C -21.734 52.809 -21.864 52.039 -21.864 51.239 C -21.864 50.439 -21.724 49.669 -21.484 48.949 L -21.484 45.859 L -25.464 45.859 C -26.284 47.479 -26.754 49.299 -26.754 51.239 C -26.754 53.179 -26.284 54.999 -25.464 56.619 L -21.484 53.529 Z"/>
+            <path fill="#EA4335" d="M -14.754 43.989 C -12.984 43.989 -11.404 44.599 -10.154 45.789 L -6.734 42.369 C -8.804 40.429 -11.514 39.239 -14.754 39.239 C -19.444 39.239 -23.494 41.939 -25.464 45.859 L -21.484 48.949 C -20.534 46.099 -17.884 43.989 -14.754 43.989 Z"/>
+          </g>
+        </svg>
+        <span data-i18n="sign_in_google">تسجيل الدخول باستخدام جوجل</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- APP SCREEN -->
+  <div id="app-screen" class="screen">
+    
+    <!-- HEADER -->
+    <header class="app-header">
+      <div class="user-info">
+        <img id="header-user-photo" src="" alt="User" class="user-avatar">
+        <span id="header-user-name" class="user-name">User</span>
+      </div>
+      <div class="header-right">
+        <div id="display-currency-badge" class="currency-badge">SAR</div>
+      </div>
+    </header>
+
+    <!-- VIEWS CONTAINER -->
+    <main class="views-container">
+      
+      <!-- DASHBOARD VIEW -->
+      <section id="view-dashboard" class="view active">
+        <div class="balance-card">
+          <div class="balance-label" data-i18n="balance">الرصيد</div>
+          <div id="balance-total" class="balance-amount">0.00</div>
+          <div class="balance-stats">
+            <div class="stat-row">
+              <span class="dot income"></span>
+              <span class="stat-label" data-i18n="income">الدخل</span>
+              <span id="balance-income" class="stat-value text-income">0.00</span>
+            </div>
+            <div class="stat-row">
+              <span class="dot expense"></span>
+              <span class="stat-label" data-i18n="expense">المصروفات</span>
+              <span id="balance-expense" class="stat-value text-expense">0.00</span>
+            </div>
+          </div>
+        </div>
+
+        <h2 class="section-title" data-i18n="spending_breakdown">تفصيل المصروفات</h2>
+        <div class="chart-container">
+          <canvas id="chart-spending-canvas"></canvas>
+        </div>
+
+        <h2 class="section-title" data-i18n="monthly_trend">الاتجاه الشهري</h2>
+        <div class="chart-container">
+          <canvas id="chart-trend-canvas"></canvas>
+        </div>
+
+        <h2 class="section-title" data-i18n="recent_transactions">المعاملات الأخيرة</h2>
+        <div id="recent-transactions-list" class="transactions-list"></div>
+      </section>
+
+      <!-- HISTORY VIEW -->
+      <section id="view-history" class="view">
+        <div class="filter-bar">
+          <input type="search" id="history-search" data-i18n="search" placeholder="بحث...">
+          <div class="filter-controls">
+            <select id="filter-type">
+              <option value="all" data-i18n="all">الكل</option>
+              <option value="income" data-i18n="income">الدخل</option>
+              <option value="expense" data-i18n="expense">المصروفات</option>
+            </select>
+            <select id="filter-category"></select>
+            <select id="filter-date-range">
+              <option value="this_month" data-i18n="this_month">هذا الشهر</option>
+              <option value="this_week" data-i18n="this_week">هذا الأسبوع</option>
+              <option value="last_month" data-i18n="last_month">الشهر الماضي</option>
+              <option value="last_3_months" data-i18n="last_3_months">آخر 3 أشهر</option>
+              <option value="this_year" data-i18n="this_year">هذا العام</option>
+              <option value="all_time" data-i18n="all_time">كل الوقت</option>
+            </select>
+          </div>
+        </div>
+        
+        <div id="history-list" class="transactions-list"></div>
+        <div id="history-empty" class="empty-state hidden">
+          <div class="empty-icon">📝</div>
+          <div data-i18n="no_transactions">لا توجد معاملات بعد.</div>
+        </div>
+      </section>
+
+      <!-- ANALYTICS VIEW -->
+      <section id="view-analytics" class="view">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div id="analytics-daily-avg" class="stat-value text-accent">0.00</div>
+            <div class="stat-label" data-i18n="daily_average">المتوسط اليومي</div>
+          </div>
+          <div class="stat-card">
+            <div id="analytics-biggest" class="stat-value text-expense">0.00</div>
+            <div class="stat-label" data-i18n="biggest_expense">أكبر مصروف</div>
+          </div>
+          <div class="stat-card">
+            <div id="analytics-total-income" class="stat-value text-income">0.00</div>
+            <div class="stat-label" data-i18n="total_income">إجمالي الدخل</div>
+          </div>
+          <div class="stat-card">
+            <div id="analytics-total-expense" class="stat-value text-expense">0.00</div>
+            <div class="stat-label" data-i18n="total_expenses">إجمالي المصروفات</div>
+          </div>
+        </div>
+
+        <h2 class="section-title" data-i18n="spending_breakdown">تفصيل المصروفات</h2>
+        <div class="chart-container">
+          <canvas id="chart-analytics-spending-canvas"></canvas>
+        </div>
+
+        <h2 class="section-title" data-i18n="category_comparison">مقارنة الفئات</h2>
+        <div class="chart-container">
+          <canvas id="chart-analytics-category-canvas"></canvas>
+        </div>
+
+        <h2 class="section-title" data-i18n="monthly_trend">الاتجاه الشهري</h2>
+        <div class="chart-container">
+          <canvas id="chart-analytics-trend-canvas"></canvas>
+        </div>
+
+        <h2 class="section-title" data-i18n="currency_breakdown">تفصيل العملات</h2>
+        <div class="chart-container">
+          <canvas id="chart-analytics-currency-canvas"></canvas>
+        </div>
+      </section>
+
+      <!-- SETTINGS VIEW -->
+      <section id="view-settings" class="view">
+        <div class="settings-list">
+          <div class="settings-item">
+            <label data-i18n="display_currency">عملة العرض</label>
+            <select id="settings-display-currency"></select>
+          </div>
+          
+          <div class="settings-item">
+            <label data-i18n="language">اللغة</label>
+            <button id="settings-language" class="btn-secondary">العربية</button>
+          </div>
+          
+          <div class="settings-item clickable" id="btn-manage-categories">
+            <label data-i18n="manage_categories" style="margin:0">إدارة الفئات</label>
+            <div class="arrow">›</div>
+          </div>
+          
+          <div class="settings-divider"></div>
+          
+          <div class="settings-item">
+            <button id="btn-export" class="btn-secondary" data-i18n="export_csv">تصدير CSV</button>
+          </div>
+          <div class="settings-item">
+            <button id="btn-import" class="btn-secondary" data-i18n="import_csv">استيراد CSV</button>
+            <input type="file" id="import-file-input" accept=".csv" class="hidden">
+          </div>
+          
+          <div class="settings-divider"></div>
+          
+          <div class="settings-item">
+            <button id="btn-clear-data" class="btn-danger w-full" data-i18n="clear_data">مسح بياناتي</button>
+          </div>
+          
+          <div class="settings-divider"></div>
+          
+          <div class="settings-item">
+            <button id="btn-sign-out" class="btn-secondary w-full" data-i18n="sign_out">تسجيل الخروج</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- CATEGORY MANAGER VIEW -->
+      <section id="view-categories" class="view">
+        <div class="sub-header">
+          <button id="btn-back-categories" class="btn-icon">‹</button>
+          <h2 data-i18n="manage_categories">إدارة الفئات</h2>
+        </div>
+        
+        <div id="categories-list" class="categories-list"></div>
+        
+        <div class="actions-row mt-4">
+          <button id="btn-add-category" class="btn-primary" data-i18n="add_category">إضافة فئة</button>
+          <button id="btn-reset-categories" class="btn-secondary mt-2" data-i18n="reset_defaults">استعادة الافتراضيات</button>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- BOTTOM NAV -->
+    <nav class="bottom-nav">
+      <button class="tab-btn active" data-tab="dashboard">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        <span data-i18n="dashboard">لوحة التحكم</span>
+      </button>
+      <button class="tab-btn" data-tab="history">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
+        <span data-i18n="history">السجل</span>
+      </button>
+      
+      <div class="fab-container">
+        <button id="fab-add" class="fab">+</button>
+      </div>
+      
+      <button class="tab-btn" data-tab="analytics">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+        <span data-i18n="analytics">التحليلات</span>
+      </button>
+      <button class="tab-btn" data-tab="settings">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        <span data-i18n="settings">الإعدادات</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- MODALS -->
+
+  <!-- Transaction Modal -->
+  <div id="transaction-modal" class="modal">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modal-title" data-i18n="add_transaction">إضافة معاملة</h3>
+        <button id="btn-close-modal" class="btn-icon">✕</button>
+      </div>
+      
+      <div class="type-toggle">
+        <button id="tx-type-income" class="toggle-btn" data-i18n="income">الدخل</button>
+        <button id="tx-type-expense" class="toggle-btn active" data-i18n="expense">المصروفات</button>
+      </div>
+      
+      <div class="form-group">
+        <label data-i18n="amount">المبلغ</label>
+        <input type="number" id="tx-amount" step="0.01" inputmode="decimal">
+      </div>
+      
+      <div class="form-group">
+        <label data-i18n="currency">العملة</label>
+        <select id="tx-currency-select"></select>
+      </div>
+      
+      <div id="tx-rate-container" class="form-group hidden p-3 bg-card rounded-md">
+        <div class="flex justify-between items-center">
+          <span class="text-sm text-secondary" data-i18n="exchange_rate">سعر الصرف</span>
+          <div class="flex items-center gap-sm">
+            <span class="text-xs" data-i18n="manual_rate">يدوي</span>
+            <input type="checkbox" id="tx-rate-toggle" class="toggle-checkbox">
+          </div>
+        </div>
+        <div id="tx-rate-value" class="text-accent text-sm mt-2"></div>
+        <input type="number" id="tx-rate-manual" step="0.0001" class="hidden mt-2" placeholder="أدخل السعر يدوياً">
+      </div>
+      
+      <div class="form-group">
+        <label data-i18n="category">الفئة</label>
+        <select id="tx-category-select"></select>
+      </div>
+      
+      <div class="form-group">
+        <label data-i18n="description">الوصف</label>
+        <input type="text" id="tx-description">
+      </div>
+      
+      <div class="form-group">
+        <label data-i18n="date">التاريخ</label>
+        <input type="date" id="tx-date">
+      </div>
+      
+      <input type="hidden" id="tx-id">
+      
+      <div class="modal-actions">
+        <button id="btn-save-tx" class="btn-primary w-full" data-i18n="save">حفظ</button>
+        <button id="btn-delete-tx" class="btn-danger w-full mt-2 hidden" data-i18n="delete">حذف</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Category Modal -->
+  <div id="category-modal" class="modal">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="cat-modal-title" data-i18n="add_category">إضافة فئة</h3>
+        <button id="btn-close-cat-modal" class="btn-icon">✕</button>
+      </div>
+      
+      <div class="form-group">
+        <label data-i18n="category_name_en">الاسم (EN)</label>
+        <input type="text" id="cat-name-en">
+      </div>
+      
+      <div class="form-group">
+        <label data-i18n="category_name_ar">الاسم (AR)</label>
+        <input type="text" id="cat-name-ar" dir="rtl">
+      </div>
+      
+      <div class="form-group">
+        <label data-i18n="pick_emoji">اختر رمز</label>
+        <div class="emoji-display">
+          <span id="cat-selected-emoji" data-value="📁">📁</span>
+        </div>
+        <div id="cat-emoji-grid" class="emoji-grid"></div>
+      </div>
+      
+      <div class="form-group">
+        <label data-i18n="pick_color">اختر لون</label>
+        <div class="color-display">
+          <div id="cat-selected-color" class="color-circle" data-value="#94A3B8" style="background-color: #94A3B8"></div>
+        </div>
+        <div id="cat-color-grid" class="color-grid"></div>
+      </div>
+      
+      <div class="modal-actions">
+        <button id="btn-save-category" class="btn-primary w-full" data-i18n="save">حفظ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm Dialog -->
+  <div id="confirm-dialog" class="modal">
+    <div class="modal-overlay"></div>
+    <div class="modal-content confirm-content">
+      <p id="confirm-message" class="confirm-message">Are you sure?</p>
+      <div class="flex gap-md mt-4">
+        <button id="btn-confirm-no" class="btn-secondary flex-1" data-i18n="cancel">إلغاء</button>
+        <button id="btn-confirm-yes" class="btn-danger flex-1" data-i18n="confirm">تأكيد</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast"></div>
+
+  <!-- Scripts -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/currency.js"></script>
+  <script src="js/categories.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(err => {
+          console.log('SW registration failed: ', err);
+        });
+      });
+    }
+  </script>
+</body>
+</html>
