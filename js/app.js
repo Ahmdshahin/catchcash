@@ -325,7 +325,9 @@ window.App = (function() {
     if (recent.length === 0) {
       els.recentTransactionsList.innerHTML = `<div class="empty-state">${window.I18n.t('no_transactions')}</div>`;
     } else {
-      recent.forEach(tx => els.recentTransactionsList.appendChild(createTransactionListItem(tx, dc)));
+      const frag = document.createDocumentFragment();
+      recent.forEach(tx => frag.appendChild(createTransactionListItem(tx, dc)));
+      els.recentTransactionsList.appendChild(frag);
     }
     
     // Update Charts
@@ -354,19 +356,23 @@ window.App = (function() {
       
       const sortedDates = Object.keys(groups).sort((a,b) => new Date(b) - new Date(a));
       
+      const frag = document.createDocumentFragment();
+      
       sortedDates.forEach(date => {
         const header = document.createElement('div');
         header.className = 'date-group-header';
         header.textContent = window.Data.formatDate(date, window.I18n.getCurrentLanguage());
-        els.historyList.appendChild(header);
+        frag.appendChild(header);
         
         groups[date].forEach(tx => {
           const item = createTransactionListItem(tx, dc);
           item.addEventListener('click', () => openEditModal(tx.id));
           item.classList.add('clickable');
-          els.historyList.appendChild(item);
+          frag.appendChild(item);
         });
       });
+      
+      els.historyList.appendChild(frag);
     }
   }
 
@@ -419,6 +425,8 @@ window.App = (function() {
     const cats = window.Categories.getAll();
     const lang = window.I18n.getCurrentLanguage();
     
+    const frag = document.createDocumentFragment();
+    
     cats.forEach(cat => {
       const item = document.createElement('div');
       item.className = 'category-item';
@@ -438,8 +446,10 @@ window.App = (function() {
       item.querySelector('.edit-cat').addEventListener('click', () => openCategoryModal(cat.id));
       item.querySelector('.delete-cat').addEventListener('click', () => deleteCategory(cat.id));
       
-      els.categoriesList.appendChild(item);
+      frag.appendChild(item);
     });
+    
+    els.categoriesList.appendChild(frag);
   }
 
   // --- Transactions UI ---

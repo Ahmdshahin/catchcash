@@ -248,25 +248,32 @@ window.Charts = (function() {
   }
 
   function initDashboard(transactions, categories, displayCurrency) {
-    if (dashboardSpendingChart) dashboardSpendingChart.destroy();
-    if (dashboardTrendChart) dashboardTrendChart.destroy();
-
     const spendingData = groupByCategory(transactions, categories, displayCurrency);
     const trendData = groupByMonth(transactions, displayCurrency);
 
     const spendCtx = document.getElementById('chart-spending-canvas');
     const trendCtx = document.getElementById('chart-trend-canvas');
     
-    dashboardSpendingChart = createDoughnutChart(spendCtx, spendingData, displayCurrency);
-    dashboardTrendChart = createBarChart(trendCtx, trendData, displayCurrency);
+    if (dashboardSpendingChart) {
+      dashboardSpendingChart.data.labels = spendingData.labels;
+      dashboardSpendingChart.data.datasets[0].data = spendingData.data;
+      dashboardSpendingChart.data.datasets[0].backgroundColor = spendingData.colors;
+      dashboardSpendingChart.update();
+    } else {
+      dashboardSpendingChart = createDoughnutChart(spendCtx, spendingData, displayCurrency);
+    }
+    
+    if (dashboardTrendChart) {
+      dashboardTrendChart.data.labels = trendData.labels;
+      dashboardTrendChart.data.datasets[0].data = trendData.income;
+      dashboardTrendChart.data.datasets[1].data = trendData.expense;
+      dashboardTrendChart.update();
+    } else {
+      dashboardTrendChart = createBarChart(trendCtx, trendData, displayCurrency);
+    }
   }
 
   function initAnalytics(transactions, categories, displayCurrency) {
-    if (analyticsSpendingChart) analyticsSpendingChart.destroy();
-    if (analyticsTrendChart) analyticsTrendChart.destroy();
-    if (analyticsCategoryChart) analyticsCategoryChart.destroy();
-    if (analyticsCurrencyChart) analyticsCurrencyChart.destroy();
-
     const spendingData = groupByCategory(transactions, categories, displayCurrency);
     const trendData = groupByMonth(transactions, displayCurrency);
     const currData = groupByCurrency(transactions);
@@ -276,10 +283,41 @@ window.Charts = (function() {
     const catCtx = document.getElementById('chart-analytics-category-canvas');
     const currCtx = document.getElementById('chart-analytics-currency-canvas');
 
-    analyticsSpendingChart = createDoughnutChart(spendCtx, spendingData, displayCurrency);
-    analyticsTrendChart = createBarChart(trendCtx, trendData, displayCurrency);
-    analyticsCategoryChart = createHorizontalBarChart(catCtx, spendingData, displayCurrency); // Reusing spending data for ranking
-    analyticsCurrencyChart = createCurrencyDoughnutChart(currCtx, currData);
+    if (analyticsSpendingChart) {
+      analyticsSpendingChart.data.labels = spendingData.labels;
+      analyticsSpendingChart.data.datasets[0].data = spendingData.data;
+      analyticsSpendingChart.data.datasets[0].backgroundColor = spendingData.colors;
+      analyticsSpendingChart.update();
+    } else {
+      analyticsSpendingChart = createDoughnutChart(spendCtx, spendingData, displayCurrency);
+    }
+    
+    if (analyticsTrendChart) {
+      analyticsTrendChart.data.labels = trendData.labels;
+      analyticsTrendChart.data.datasets[0].data = trendData.income;
+      analyticsTrendChart.data.datasets[1].data = trendData.expense;
+      analyticsTrendChart.update();
+    } else {
+      analyticsTrendChart = createBarChart(trendCtx, trendData, displayCurrency);
+    }
+    
+    if (analyticsCategoryChart) {
+      analyticsCategoryChart.data.labels = spendingData.labels;
+      analyticsCategoryChart.data.datasets[0].data = spendingData.data;
+      analyticsCategoryChart.data.datasets[0].backgroundColor = spendingData.colors;
+      analyticsCategoryChart.update();
+    } else {
+      analyticsCategoryChart = createHorizontalBarChart(catCtx, spendingData, displayCurrency);
+    }
+    
+    if (analyticsCurrencyChart) {
+      analyticsCurrencyChart.data.labels = currData.labels;
+      analyticsCurrencyChart.data.datasets[0].data = currData.data;
+      analyticsCurrencyChart.data.datasets[0].backgroundColor = currData.colors;
+      analyticsCurrencyChart.update();
+    } else {
+      analyticsCurrencyChart = createCurrencyDoughnutChart(currCtx, currData);
+    }
   }
 
   function destroyAll() {

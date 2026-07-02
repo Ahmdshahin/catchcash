@@ -51,12 +51,12 @@ window.Currency = (function() {
 
   async function fetchRates(baseCurrency) {
     try {
-      const response = await fetch(`https://api.frankfurter.app/latest?from=${baseCurrency}`);
+      const response = await fetch(`https://open.er-api.com/v6/latest/${baseCurrency}`);
       if (!response.ok) throw new Error('API response not ok');
       const data = await response.json();
       
       const cacheData = {
-        base: data.base,
+        base: data.base_code,
         rates: data.rates,
         timestamp: Date.now()
       };
@@ -109,14 +109,24 @@ window.Currency = (function() {
     return amount; 
   }
 
+  // Cache for Intl.NumberFormat to massively improve animation performance
+  const formattersCache = {};
+
   function formatAmount(amount, currencyCode) {
     const cur = getCurrencyByCode(currencyCode);
     const isAr = window.I18n ? window.I18n.getCurrentLanguage() === 'ar' : false;
+    const locale = isAr ? 'ar-SA' : 'en-US';
     
-    const formattedNum = new Intl.NumberFormat(isAr ? 'ar-SA' : 'en-US', {
-      minimumFractionDigits: cur.decimals,
-      maximumFractionDigits: cur.decimals
-    }).format(amount);
+    const cacheKey = `${locale}_${cur.decimals}`;
+    
+    if (!formattersCache[cacheKey]) {
+      formattersCache[cacheKey] = new Intl.NumberFormat(locale, {
+        minimumFractionDigits: cur.decimals,
+        maximumFractionDigits: cur.decimals
+      });
+    }
+    
+    const formattedNum = formattersCache[cacheKey].format(amount);
 
     if (isAr) {
        return `${formattedNum} ${cur.symbol}`;

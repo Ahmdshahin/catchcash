@@ -78,7 +78,10 @@ window.I18n = (function() {
       profile: 'الملف الشخصي',
       settings_saved: 'تم حفظ الإعدادات',
       category_in_use: 'هذه الفئة قيد الاستخدام في معاملات سابقة. سيتم تصنيفها كـ "غير مصنف" إذا قمت بحذفها.',
-      uncategorized: 'غير مصنف'
+      uncategorized: 'غير مصنف',
+      set_daily_reminder: 'تفعيل التذكير اليومي',
+      reminder_title: 'تسجيل المصروفات 💰',
+      reminder_desc: 'لا تنسى تسجيل مصروفاتك اليوم في تطبيق كاتش كاش!'
     },
     en: {
       app_name: 'Catch Cash',
@@ -155,7 +158,10 @@ window.I18n = (function() {
       profile: 'Profile',
       settings_saved: 'Settings Saved',
       category_in_use: 'This category is in use. Transactions will become "Uncategorized" if you delete it.',
-      uncategorized: 'Uncategorized'
+      uncategorized: 'Uncategorized',
+      set_daily_reminder: 'Set Daily Reminder',
+      reminder_title: 'Track Expenses 💰',
+      reminder_desc: 'Don\'t forget to track your daily expenses in Catch Cash!'
     }
   };
 

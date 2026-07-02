@@ -1,6 +1,7 @@
 window.Auth = (function() {
   
   // PLACEHOLDER: The user will need to add their Firebase Config here
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyAuxnhxEdJtDy66TxxwGfu8RrJawuH889I",
   authDomain: "catch-cash-app.firebaseapp.com",
