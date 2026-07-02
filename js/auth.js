@@ -1,14 +1,15 @@
 window.Auth = (function() {
   
   // PLACEHOLDER: The user will need to add their Firebase Config here
-  const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT.firebaseapp.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
-  };
+const firebaseConfig = {
+  apiKey: "AIzaSyAuxnhxEdJtDy66TxxwGfu8RrJawuH889I",
+  authDomain: "catch-cash-app.firebaseapp.com",
+  projectId: "catch-cash-app",
+  storageBucket: "catch-cash-app.firebasestorage.app",
+  messagingSenderId: "965129090008",
+  appId: "1:965129090008:web:57ece0a194fdc470d9b8ad",
+  measurementId: "G-CN4FR6C64X"
+};
 
   let currentUser = null;
   let onSignInCallback = null;
@@ -47,19 +48,19 @@ window.Auth = (function() {
     }
   }
 
-  function signIn() {
+  async function signIn() {
     const provider = new firebase.auth.GoogleAuthProvider();
     const isMobile = window.innerWidth < 768 || /Mobi|Android/i.test(navigator.userAgent);
     
     try {
       if (isMobile) {
-        firebase.auth().signInWithRedirect(provider);
+        await firebase.auth().signInWithRedirect(provider);
       } else {
-        firebase.auth().signInWithPopup(provider);
+        await firebase.auth().signInWithPopup(provider);
       }
     } catch(e) {
       console.error("Sign in error", e);
-      alert("Sign in failed. Ensure Firebase config is set.");
+      alert("Sign in failed. Ensure Firebase config is set and that you are serving this website from a web server (e.g. localhost) rather than opening the file directly.");
     }
   }
 
